@@ -24,6 +24,10 @@
             text-align: center;
         }
 
+        html {
+            overflow: hidden;
+        }
+
     </style>
     <script src="{{ url_for('static',filename='home/plugins/ie9/html5shiv.min.js') }}"></script>
     <script src="{{ url_for('static',filename='home/plugins/ie9/respond.min.js') }}"></script>
@@ -252,7 +256,7 @@
                         icon: "fa fa-circle-o"
                     },
                     {
-                        id: "g-2-2",
+                        id: "g-3-2",
                         text: "接口结果管理",
                         url: "{{ url_for('home.api_result') }}",
                         targetType: "iframe-tab",
