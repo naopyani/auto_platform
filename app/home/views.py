@@ -53,13 +53,17 @@ def login():
         data = form.data
         user = User.query.filter_by(name=data["name"]).first()
         # 密码错误时，check_pwd返回false,则此时not check_pwd(data["pwd"])为真。
-        if not user.check_pwd(data["pwd"]):
-            flash("密码错误!", "err")
-            return redirect(url_for("user.login"))
+        if user:
+            if not user.check_pwd(data["pwd"]):
+                flash("密码错误！", "err")
+                return redirect(url_for("home.login"))
+        else:
+            flash("账户不存在！", "err")
+            return redirect(url_for("home.login"))
         # 如果是正确的，就要定义session的会话进行保存。
         session["user"] = data["name"]
         session["user_id"] = user.id
-        return redirect(request.args.get("next") or url_for("user.index"))
+        return redirect(request.args.get("next") or url_for("home.index"))
     return render_template("home/login.html", form=form)
 
 

@@ -1,4 +1,21 @@
 {% extends 'home/home.html' %}
 
 {% block content %}
+        <section class="content-wrapper">
+        <div id="Hui-tabNav" class="Hui-tabNav ">
+            <div class="Hui-tabNav-wp">
+                <ul id="min_title_list" class="acrossTab cl" style="padding-left: 6px;">
+                    <li class="active">
+                        <span title="首页" data-href="${ctx}${apath}/dashboard">UI</span><em></em>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div id="iframe_box" class="Hui-article">
+            <div class="show_iframe">
+                <div style="display: none" class="loading"></div>
+                <iframe scrolling="yes" frameborder="0" src="${ctx}${apath}/dashboard"></iframe>
+            </div>
+        </div>
+    </section>
 {% endblock %}
