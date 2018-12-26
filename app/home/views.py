@@ -43,6 +43,12 @@ def index():
     return render_template("home/index.html")
 
 
+@home.route("/home/", methods=["GET"])
+@user_login_req
+def home_page():
+    return render_template("home/home.html")
+
+
 @home.route("/login/", methods=["GET", "POST"])
 def login():
     """

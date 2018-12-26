@@ -1,20 +1,271 @@
-{% extends 'home/home.html' %}
-{% block css %}
-    <style>
-    </style>
-{% endblock %}
-{% block content %}
-    <div class="content-wrapper">
-        <iframe scrolling="auto" frameborder="0" src="http://j9.test.k8s.taqu.cn/tq-qtp/index" name="right" width="100%"
-                height="100%"></iframe>
-    </div>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    {% set logo_path = g.logo %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>自动化测试平台</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="shortcut icon" href="{{ url_for('static',filename='base/images/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='home/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='fonts/css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='ionicons/css/ionicons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='home/dist/css/AdminLTE.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='home/dist/css/skins/all-skins.min.css') }}">
+    <link rel="stylesheet" type="text/css"
+          href="{{ url_for('static',filename='home/plugins/datepicker/datepicker3.css') }}">
+    <style type="text/css">
+        * {
+            font-family: "Microsoft YaHei";
+        }
 
-{% block js %}
-    <script>
-        $(document).ready(function () {
-            $("#g-1").addClass("active");
-            $("#g-1-1").addClass("active");
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        html {
+            overflow: hidden;
+        }
+
+    </style>
+    <script src="{{ url_for('static',filename='home/plugins/ie9/html5shiv.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='home/plugins/ie9/respond.min.js') }}"></script>
+    {% block css %} {% endblock %}
+</head>
+<body class="hold-transition skin-red sidebar-mini fixed">
+<div class="wrapper">
+    <header class="main-header">
+        <a href="{{ url_for('home.index') }}" class="logo">
+            <span class="logo-mini"><img src="{{ url_for('static',filename='base/images/logo.png') }}"
+                                         style="height:40px;width:40px;">自动化系统</span>
+            <span class="logo-lg"><img src="{{ url_for('static',filename='base/images/logo.png') }}"
+                                       style="height:40px;width:40px;">自动化测试平台</span>
+        </a>
+        <nav class="navbar navbar-static-top">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                <span class="sr-only">下拉菜单</span>
+            </a>
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown user user-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <img src="{{ url_for('static',filename='home/dist/img/user3-128x128.jpg') }}"
+                                 class="user-image" alt="User Image">
+                            <span class="hidden-xs">{{ session['home'] }}</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="user-header">
+                                <img src="{{ url_for('static',filename='home/dist/img/user3-128x128.jpg') }}"
+                                     class="img-circle" alt="User Image">
+                                <p>
+                                    {{ session['home'] }}
+                                    <small>{{ online_time }}</small>
+                                </p>
+                            </li>
+                            <li class="user-footer">
+                                <div class="pull-left">
+                                    <a href="{{ url_for('home.pwd') }}" class="btn btn-default btn-flat">修改密码</a>
+                                </div>
+                                <div class="pull-right">
+                                    <a href="{{ url_for('home.logout') }}" class="btn btn-default btn-flat">退出系统</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <aside class="main-sidebar">
+        <section class="sidebar">
+            <div class="user-panel">
+                <div class="pull-left image">
+                    <img src="{{ url_for('static',filename='home/dist/img/user3-128x128.jpg') }}" class="img-circle"
+                         alt="User Image">
+                </div>
+                <div class="pull-left info">
+                    <p>用户{{ session['home'] }}</p>
+                    <a href="#"><i class="fa fa-circle text-success"></i> 在线</a>
+                </div>
+            </div>
+            <form action="#" method="get" class="sidebar-form">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="搜索...">
+                    <span class="input-group-btn">
+                        <button type="button" name="search" id="search-btn" class="btn btn-flat"
+                                onclick="search_menu()"><i
+                                class="fa fa-search"></i>
+                        </button>
+                    </span>
+                </div>
+                {#                {% include "home/grid.html" %}#}
+            </form>
+            <ul class="sidebar-menu">
+
+            </ul>
+        </section>
+    </aside>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper" id="content-wrapper" style="min-height: 421px;">
+        <!--bootstrap tab风格 多标签页-->
+        <div class="content-tabs">
+            <button class="roll-nav roll-left tabLeft" onclick="scrollTabLeft()">
+                <i class="fa fa-backward"></i>
+            </button>
+            <nav class="page-tabs menuTabs tab-ui-menu" id="tab-menu">
+                <div class="page-tabs-content" style="margin-left: 0px;">
+
+                </div>
+            </nav>
+            <button class="roll-nav roll-right tabRight" onclick="scrollTabRight()">
+                <i class="fa fa-forward" style="margin-left: 3px;"></i>
+            </button>
+            <div class="btn-group roll-nav roll-right">
+                <button class="dropdown tabClose" data-toggle="dropdown">
+                    页签操作<i class="fa fa-caret-down" style="padding-left: 3px;"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" style="min-width: 128px;">
+                    <li><a class="tabReload" href="javascript:refreshTab();">刷新当前</a></li>
+                    <li><a class="tabCloseCurrent" href="javascript:closeCurrentTab();">关闭当前</a></li>
+                    <li><a class="tabCloseAll" href="javascript:closeOtherTabs(true);">全部关闭</a></li>
+                    <li><a class="tabCloseOther" href="javascript:closeOtherTabs();">除此之外全部关闭</a></li>
+                </ul>
+            </div>
+            <button class="roll-nav roll-right fullscreen" onclick="App.handleFullScreen()"><i
+                    class="fa fa-arrows-alt"></i></button>
+        </div>
+        <div class="content-iframe " style="background-color: #ffffff; ">
+            <div class="tab-content " id="tab-content">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static',filename='home/plugins/jQuery/jQuery-2.2.3.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/bootstrap/js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/slimScroll/jquery.slimscroll.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/fastclick/fastclick.js') }}"></script>
+<script src="{{ url_for('static',filename='home/dist/js/app.js') }}"></script>
+<script src="{{ url_for('static',filename='home/dist/js/demo.js') }}"></script>
+<script src="{{ url_for('static',filename='holder/holder.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/dist/js/app_iframe.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/datepicker/bootstrap-datepicker.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js') }}"
+        charset="UTF-8"></script>
+<script type="text/javascript">
+    /**
+     * 本地搜索菜单
+     */
+    function search_menu() {
+        //要搜索的值
+        var text = $('input[name=q]').val();
+
+        var $ul = $('.sidebar-menu');
+        $ul.find("a.nav-link").each(function () {
+            var $a = $(this).css("border", "");
+
+            //判断是否含有要搜索的字符串
+            if ($a.children("span.menu-text").text().indexOf(text) >= 0) {
+
+                //如果a标签的父级是隐藏的就展开
+                $ul = $a.parents("ul");
+
+                if ($ul.is(":hidden")) {
+                    $a.parents("ul").prev().click();
+                }
+
+                //点击该菜单
+                $a.click().css("border", "1px solid");
+
+//                return false;
+            }
         });
-    </script>
-{% endblock %}
+    }
+
+    $(function () {
+        console.log(window.location);
+
+        App.setbasePath("");
+        App.setGlobalImgPath("{{ url_for('static',filename='home/dist/img/') }}");
+
+        addTabs({
+            id: 'g-0',
+            title: '首页',
+            close: false,
+            url: "home",
+            urlType: "relative"
+        });
+
+        App.fixIframeCotent();
+
+        var menus = [
+            {
+                id: "g-0",
+                text: "管理菜单",
+                icon: "",
+                isHeader: true
+            },
+            {
+                id: "g-1",
+                text: "首页",
+                icon: "fa fa-home",
+                children: [
+                    {
+                        id: "g-1-1",
+                        text: "控制面板",
+                        icon: "fa fa-circle-o",
+                        url: "home",
+                        targetType: "iframe-tab"
+                    }
+                ]
+            },
+            {
+                id: "9-2",
+                text: "移动端UI测试管理",
+                icon: "fa fa-phone-square",
+                children: [
+                    {
+                        id: "g-2-1",
+                        text: "UI用例管理",
+                        url: "ui/test",
+                        targetType: "iframe-tab",
+                        icon: "fa fa-circle-o"
+                    },
+                    {
+                        id: "g-2-2",
+                        text: "UI结果管理",
+                        url: "ui/result",
+                        targetType: "iframe-tab",
+                        icon: "fa fa-circle-o"
+                    }
+                ]
+            },
+            {
+                id: "9-3",
+                text: "接口测试管理",
+                icon: "fa fa-buysellads",
+                children: [
+                    {
+                        id: "g-3-1",
+                        text: "接口用例管理",
+                        url: "api/test",
+                        targetType: "iframe-tab",
+                        icon: "fa fa-circle-o"
+                    },
+                    {
+                        id: "g-3-2",
+                        text: "接口结果管理",
+                        url: "api/result",
+                        targetType: "iframe-tab",
+                        icon: "fa fa-circle-o"
+                    }
+                ]
+            }
+        ];
+        $('.sidebar-menu').sidebarMenu({data: menus});
+    });
+</script>
+{% block js %} {% endblock %}
+</body>
+</html>
