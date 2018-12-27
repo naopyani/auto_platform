@@ -31,7 +31,6 @@
     </style>
     <script src="{{ url_for('static',filename='home/plugins/ie9/html5shiv.min.js') }}"></script>
     <script src="{{ url_for('static',filename='home/plugins/ie9/respond.min.js') }}"></script>
-    {% block css %} {% endblock %}
 </head>
 <body class="hold-transition skin-red sidebar-mini fixed">
 <div class="wrapper">
@@ -99,7 +98,6 @@
                         </button>
                     </span>
                 </div>
-                {#                {% include "home/grid.html" %}#}
             </form>
             <ul class="sidebar-menu">
 
@@ -160,13 +158,14 @@
     function search_menu() {
         //要搜索的值
         var text = $('input[name=q]').val();
-
+        console.log(text);
         var $ul = $('.sidebar-menu');
         $ul.find("a.nav-link").each(function () {
             var $a = $(this).css("border", "");
 
             //判断是否含有要搜索的字符串
-            if ($a.children("span.menu-text").text().indexOf(text) >= 0) {
+            if (text){
+                if ($a.children("span.menu-text").text().indexOf(text) >= 0) {
 
                 //如果a标签的父级是隐藏的就展开
                 $ul = $a.parents("ul");
@@ -179,12 +178,23 @@
                 $a.click().css("border", "1px solid");
 
 //                return false;
+                }
             }
+
         });
     }
 
+    // 搜索框输入回车触发search_menu()方法
+    $('input[name=q]').keydown(function (event) {
+        e = event ? event :(window.event ? window.event : null);
+        if (e.keyCode === 13) {
+            search_menu();
+            return false;
+        }
+    });
+
     $(function () {
-        console.log(window.location);
+        //  console.log(window.location);
 
         App.setbasePath("");
         App.setGlobalImgPath("{{ url_for('static',filename='home/dist/img/') }}");
@@ -266,6 +276,5 @@
         $('.sidebar-menu').sidebarMenu({data: menus});
     });
 </script>
-{% block js %} {% endblock %}
 </body>
 </html>
