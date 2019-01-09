@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="edge" />
+<link rel="shortcut icon" href="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/style/images/favicon.ico" />
+<!-- [my97日期时间控件] -->
+<script type="text/javascript" src="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/My97DatePicker/WdatePicker.js" charset="utf-8"></script>
+<!-- [jQuery] -->
+<script type="text/javascript" src="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/easyui/jquery.min.js" charset="utf-8"></script>
+<!-- [EasyUI] -->
+<link id="easyuiTheme" rel="stylesheet" type="text/css" href="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/easyui/themes/IconExtension.css" />
+<link id="easyuiTheme" rel="stylesheet" type="text/css" href="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/easyui/themes/gray/easyui.css" />
+<link id="easyuiTheme" rel="stylesheet" type="text/css" href="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/easyui/themes/icon.css" />
+<script type="text/javascript" src="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/easyui/jquery.easyui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/easyui/locale/easyui-lang-zh_CN.js" charset="utf-8"></script>
+<!-- [扩展JS] -->
+<script type="text/javascript" src="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/extJs.js" charset="utf-8"></script>
+<!-- [扩展样式] -->
+<link rel="stylesheet" type="text/css" href="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/style/css/taqu.css" />
+<link rel="stylesheet" type="text/css" href="http://j9.test.k8s.taqu.cn:80/tq-qtp/static/icommon.css" />
+<meta http-equiv="X-UA-Compatible" content="edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>UI用例管理</title>
+	<script type="text/javascript">
+        var dataGrid;
+        var caseTree;
+        var currentDir = "caseUI";//文件夹树，当前所处文件夹
+       	var _selectRow = null;
+		var _uploadIndex = 0;
+
+        $(function() {
+            caseTree = $('#caseTree').tree({
+                url : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/tree',
+                queryParams : {"filename":"caseUI"},
+                parentField : 'pid',
+                lines : true,
+                onClick : function(node) {
+                	_selectRow = null;
+                    var filename = node.text;
+                    if(node.pid){
+                        filename = node.pid+"/"+node.text;
+                    }
+                    if(node.attributes == true){//文件
+                        $("#table_view").hide();
+                        $("#file_view").show();
+                        //获取文件内容
+                        getFileSource(filename);
+                    }else{	//文件夹
+                        $("#table_view").show();
+                        $("#file_view").hide();
+                        dataGrid.datagrid('load', {
+                            filename: filename
+                        });
+                        //修改当前目录
+                        currentDir = filename;
+                        $("#currentDir").html(currentDir);
+                    }
+                },
+                onDblClick : function(node){
+                	_selectRow = null;
+                    var state = node.state;
+                    var isFile = node.attributes;
+                    if(!isFile){
+                        if(state=="open"){
+                            caseTree.tree("collapse", node.target);
+                        }else if(state=="closed"){
+                            caseTree.tree("expand", node.target);
+                        }
+                    }
+                },
+                onBeforeLoad : function(node, param){
+                    if(param.id!=null){
+                        if(node.pid){
+                            param.filename = node.pid+"/"+node.text;
+                        }else{
+                            param.filename = node.text;
+                        }
+                    }
+                }
+            });
+            dataGrid = $('#dataGrid').datagrid({
+                url : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/dataGrid',
+                fit : true,
+                striped : true,
+                rownumbers : true,
+                singleSelect : true,
+                idField : 'id',
+                columns : [ [ {
+                    width : '33',
+                    title : '类型',
+                    field : 'directory',
+                    formatter : function(value, row, index) {
+                        if(value){
+                            return '<span style="margin:4px" class="tree-folder"></span>';
+                        }else{
+                            return '<span style="margin:4px" class="tree-file"></span>';
+                        }
+                    }
+                }, {
+                    width : '300',
+                    title : '文件名',
+                    field : 'filename'
+                }, {
+                    width : '100',
+                    title : '大小',
+                    field : 'size',
+                    formatter : function(value, row, index) {
+                        return value+"KB";
+                    }
+                }, {
+                    width : '150',
+                    title : '最后修改时间',
+                    field : 'lastModified'
+                }, {
+                    field : 'action',
+                    title : '操作',
+                    width : 380,
+                    formatter : function(value, row, index) {
+                        var str = '';
+                        if(!row.directory && row.filename !="global-config.xml"){//判断是否是文件
+
+                            str += $.formatString('<a href="javascript:void(0);" class="case-easyui-linkbutton-doCase" onclick="doCase(\'{0}\');"></a>', row.name);
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+
+                        }else if(row.directory){
+
+                            str += $.formatString('<a href="javascript:void(0);" class="case-easyui-linkbutton-doCases" onclick="doCases(\'{0}\');"></a>', row.name);
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+
+                        }
+                        if(!row.directory){//判断是否是文件
+
+                            str += $.formatString('<a href="javascript:void(0)" class="case-easyui-linkbutton-edit" onclick="editFun(\'{0}\', \'{1}\');" ></a>', row.name, index);
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                            str += $.formatString('<a href="javascript:void(0)" class="case-easyui-linkbutton-editContent" onclick="editContentFun(\'{0}\', \'{1}\');" ></a>', row.name, index);
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+
+                        }
+                        if(!row.directory){//判断是否是文件
+                            str += $.formatString('<a href="javascript:void(0)" class="case-easyui-linkbutton-copy" onclick="copyFun(\'{0}\', \'{1}\', \'{2}\');" ></a>', row.name, row.filename, index);
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                        }
+
+                        str += $.formatString('<a href="javascript:void(0)" class="case-easyui-linkbutton-del"  onclick="deleteFun(\'{0}\');" ></a>', row.name);
+
+                        return str;
+                    }
+                }] ],
+                onLoadSuccess:function(data){
+                    $('.case-easyui-linkbutton-copy').linkbutton({text:'复制', plain:true, iconCls:'icon-list'});
+                    $('.case-easyui-linkbutton-doCase').linkbutton({text:'执行', plain:true, iconCls:'icon-redo'});
+                    $('.case-easyui-linkbutton-doCases').linkbutton({text:'批量执行', plain:true, iconCls:'icon-redo'});
+                    $('.case-easyui-linkbutton-edit').linkbutton({text:'编辑', plain:true, iconCls:'icon-edit'});
+                    $('.case-easyui-linkbutton-editContent').linkbutton({text:'文本编辑', plain:true, iconCls:'icon-edit'});
+                    $('.case-easyui-linkbutton-del').linkbutton({text:'删除', plain:true, iconCls:'icon-del'});
+
+                    if(_selectRow != null){
+                  	  	$('#dataGrid').datagrid("selectRow", _selectRow);
+                    }else{
+                    	$('#dataGrid').datagrid('unselectAll').datagrid('uncheckAll');
+                    }
+                },
+                toolbar : '#toolbar'
+            });
+        });
+
+        //获取文件内容
+        function getFileSource(filename){
+            progressLoad();
+            $.post('http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/getFileSource', {filename:filename}, function(result) {
+                if (result.success) {
+                    var source;
+                    if(result.data && result.data.source){
+                        source = result.data.source;
+                    }else{
+                        source = '';
+                        parent.$.messager.alert('错误', '文件不存在，请刷新.', 'error');
+                    }
+                    $("#source").textbox({
+                        value:source,
+                        multiline:true,
+                        disabled:true,
+                        width:"100%",
+                        height:"100%"
+                    })
+                } else {
+                    parent.$.messager.alert('错误', result.msg, 'error');
+                }
+                progressClose();
+            }, 'JSON');
+        }
+
+        //创建文件夹
+        function createDir(){
+            progressLoad();
+            var dirName = $("#dirName").textbox('getValue');
+            if(dirName==""){
+                parent.$.messager.alert('提示', '请输入文件夹名称', 'info');
+                progressClose();
+                return false;
+            }
+
+            $.post('http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/createDir', {filename:currentDir+"/"+dirName}, function(result) {
+            	_selectRow = null;
+                if (result.success) {
+                    $("#dirName").textbox('reset');
+                    parent.$.messager.alert('提示', result.msg, 'info');
+                    dataGrid.datagrid('reload');
+                } else {
+                    parent.$.messager.alert('错误', result.msg, 'error');
+                    dataGrid.datagrid('reload');
+                }
+                progressClose();
+            }, 'JSON');
+        }
+
+        //创建全局配置/用例
+        function addFun(fileType) {
+            parent.$.modalDialog({
+                title : '创建',
+                width : 1000,
+                height : 700,
+                href : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/addPage',
+                method : 'post',
+                queryParams : {filename:currentDir, fileType:fileType},
+                buttons : [ {
+                    text : '添加',
+                    handler : function() {
+                        parent.$.modalDialog.openner_dataGrid = dataGrid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                        var f = parent.$.modalDialog.handler.find('#addForm');
+                        f.submit();
+                        _selectRow = null;
+                    }
+                } ],
+                onOpen: function() {
+                }
+            });
+        }
+
+        //创建全局配置/用例
+        function copyFun(name, filename, index) {
+            if (name == undefined || filename == undefined) {//点击右键菜单才会触发这个
+                var rows = dataGrid.datagrid('getSelections');
+                name = rows[0].name;
+                filename = rows[0].filename;
+            } else {//点击操作里面的删除图标会触发这个
+                dataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+            }
+            parent.$.modalDialog({
+                title : '复制',
+                width : 600,
+                height : 500,
+                href : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/copyPage',
+                method : 'post',
+                queryParams : {name:name, filename:filename},
+                buttons : [ {
+                    text : '确定',
+                    handler : function() {
+                        parent.$.modalDialog.openner_dataGrid = dataGrid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                        var f = parent.$.modalDialog.handler.find('#copyForm');
+                        f.submit();
+                        _selectRow = index;
+                    }
+                } ]
+            });
+        }
+
+        function deleteFun(name) {
+            parent.$.messager.confirm('询问', '您是否要删除当前文件或文件夹？', function(b) {
+                if (b) {
+                    progressLoad();
+                    $.post('http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/delete', {
+                        filename : name
+                    }, function(result) {
+                        if (result.success) {
+                            parent.$.messager.alert('提示', '删除成功', 'info');
+                            dataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+                            dataGrid.datagrid('reload');
+                            _selectRow = null;
+                        } else {
+                            parent.$.messager.alert('错误', result.msg, 'error');
+                        }
+                        progressClose();
+
+                    }, 'JSON');
+                }
+            });
+        }
+
+        function editFun(name, index) {
+            parent.$.modalDialog({
+                title : '编辑',
+                width : 1000,
+                height : 700,
+                href : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/editPage',
+                method : 'post',
+                queryParams : {filename:name},
+                buttons : [ {
+                    text : '确定',
+                    handler : function() {
+                        parent.$.modalDialog.openner_dataGrid = dataGrid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                        var f = parent.$.modalDialog.handler.find('#editForm');
+                        f.submit();
+                        _selectRow = index;
+
+                    }
+                } ],
+                onOpen: function() {
+                }
+            });
+        }
+
+        function editContentFun(name, index) {
+            if (name == undefined) {//点击右键菜单才会触发这个
+                var rows = dataGrid.datagrid('getSelections');
+                name = rows[0].name;
+            }
+            parent.$.modalDialog({
+                title : '编辑',
+                width : 1000,
+                height : 700,
+                href : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/editContentPage',
+                method : 'post',
+                queryParams : {filename:name},
+                buttons : [ {
+                    text : '确定',
+                    handler : function() {
+                        parent.$.modalDialog.openner_dataGrid = dataGrid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                        var f = parent.$.modalDialog.handler.find('#editContentForm');
+                        f.submit();
+                        _selectRow = index;
+                    }
+                } ]
+            });
+        }
+
+        function reloadFun(){
+            caseTree.tree("reload");
+        }
+
+        //执行用例
+        function doCase(name){
+            if (name == undefined) {//点击右键菜单才会触发这个
+                var rows = dataGrid.datagrid('getSelections');
+                name = rows[0].name;
+            } else {//点击操作里面的删除图标会触发这个
+                dataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+            }
+            parent.$.modalDialog({
+                title : '用例',
+                width : 600,
+                height : 600,
+                href : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/doCasePage',
+                method : 'post',
+                queryParams :{filename:name, type:1}, //type: 1-单个用例，2-批量用例
+                buttons : [ {
+                    text : '关闭',
+                    handler : function() {
+                        parent.$.modalDialog.handler.dialog('close');
+                    }
+                },
+                {
+                    text : '异步执行用例',
+                    handler : function() {
+                        var f = parent.$.modalDialog.handler.find('#caseForm');
+                        $(f).find("input[name='asyncType']").val(2);
+                        f.submit();
+                    }
+                }]
+            });
+        }
+
+        //执行用例
+        function doCases(name){
+            if (name == undefined) {//点击右键菜单才会触发这个
+                var rows = dataGrid.datagrid('getSelections');
+                name = rows[0].name;
+            } else {//点击操作里面的删除图标会触发这个
+                dataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+            }
+            parent.$.modalDialog({
+                title : '用例',
+                width : 600,
+                height : 500,
+                href : 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/doCasePage',
+                method : 'post',
+                queryParams :{filename:name, type:2}, //type: 1-单个用例，2-批量用例
+                buttons : [ {
+                    text : '关闭',
+                    handler : function() {
+                        parent.$.modalDialog.handler.dialog('close');
+                    }
+                },
+                {
+                    text : '异步执行用例',
+                    handler : function() {
+                        var f = parent.$.modalDialog.handler.find('#caseForm');
+                        $(f).find("input[name='asyncType']").val(2);
+                        f.submit();
+                    }
+                }]
+            });
+        }
+
+        function updateFun(){
+        	_uploadIndex++;
+        	if(currentDir == "caseUI"){
+        		parent.$.messager.alert('提示', 'caseUI目录禁止上传xml文件', 'warning');
+        		return
+        	}
+        	var name = $("#uploadTest").filebox("getValue");
+        	if(name == ""){
+        		parent.$.messager.alert('提示', '请选择要上传的用例文件', 'warning');
+        		return
+        	}
+        	if(!name.endWith(".xml")){
+        		parent.$.messager.alert('提示', '请选择正确的xml文件', 'warning');
+        		return
+        	}
+
+        	filename = currentDir + "/" + name.substring(name.lastIndexOf("\\")+1)
+        	$.get('http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/isTestExist',{"filename":filename},function(result){
+        		if (result.success) {
+                    if(result.data === true){
+                    	parent.$.messager.confirm('询问', '该名称用例已存在，是否覆盖？', function(b) {
+                    		if (b) {
+                    			doUpload(name, filename);
+                    		}
+                    	})
+                    }else{
+	                    doUpload(name, filename);
+                    }
+
+                } else {
+                    parent.$.messager.alert('错误', result.msg, 'error');
+                }
+
+        		/* parent.$.messager.confirm('询问', '您是否要删除当前文件或文件夹？', function(b) {
+                    if (b) {
+                        progressLoad();
+                        $.post('http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/delete', {
+                            filename : name
+                        }, function(result) {
+                            if (result.success) {
+                                parent.$.messager.alert('提示', '删除成功', 'info');
+                                dataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+                                dataGrid.datagrid('reload');
+                                _selectRow = null;
+                            } else {
+                                parent.$.messager.alert('错误', result.msg, 'error');
+                            }
+                            progressClose();
+
+                        }, 'JSON');
+                    }
+                }); */
+        	},"json");
+
+
+
+
+        	//console.info($("input[name='uploadFile']")[0])
+
+        	//$("#uploadForm").submit();
+        	//doUpload()
+        }
+
+        function doUpload(name, filename){
+			var id = "p" + _uploadIndex;
+
+        	var str = '<tr><td><div style="float:left;">'+name+':</div><div id="'+id+'" style="width:400px;float:left;"></div></td></tr>';
+        	//$("#uploadTestTable").append(str)
+        	$('#'+id).progressbar({ height : 15,value: 0 });
+
+        	var formData = new FormData($( "#uploadForm" )[0]);
+            formData.append("filePath", currentDir);
+            //caseUI/b/3333333.xml
+            $.ajax({
+				url: 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/upload' ,
+				type: 'POST',
+				data: formData,
+				async: false,
+				cache: false,
+				contentType: false,
+				processData: false,
+				success: function (returndata) {
+                        parent.$.messager.alert('提示', '上传成功', 'info');
+                        $("#uploadTest").filebox("setValue","");
+                     //   dataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+                        dataGrid.datagrid('reload');
+                      //  _selectRow = null;
+
+				},
+				error: function (returndata) {
+					parent.$.messager.alert('错误', returndata, 'error');
+				}
+            });
+        }
+
+
+    /*  function doUpload() {
+        var formData = new FormData($( "#uploadForm" )[0]);
+        formData.append("filePath", currentDir);
+        //caseUI/b/3333333.xml
+        $.ajax({
+          url: 'http://j9.test.k8s.taqu.cn:80/tq-qtp/autoTestUI/upload' ,
+          type: 'POST',
+          data: formData,
+          async: false,
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function (returndata) {
+            console.info(returndata);
+          },
+          error: function (returndata) {
+        	  console.info(returndata);
+          }
+        });
+     } */
+
+
+        /**↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓  以下方法，在add/edit页面公用  ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓**/
+
+
+        /**↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑  以上方法，在add/edit页面公用 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑**/
+	</script>
+</head>
+<body class="easyui-layout" data-options="fit:true, border:false">
+<div data-options="region:'center', border:true" >
+	<div id="table_view" class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center', title:'用例操作'">
+			<div id="toolbar" style="display: none;">
+					<form id="uploadForm" method="post" enctype="multipart/form-data">
+					当前目录：<font style="font-family:微软雅黑" id="currentDir">caseUI</font>&nbsp;&nbsp;&nbsp;&nbsp;
+
+						新建目录：<input id="dirName" class="easyui-textbox" style="width:250px">
+						<a onclick="createDir();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true, iconCls:'icon-add'">新建</a>&nbsp;&nbsp;&nbsp;&nbsp;
+					<a onclick="addFun(2);" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true, iconCls:'icon-add'">创建用例</a>
+
+						&nbsp;&nbsp;&nbsp;&nbsp;上传用例：<input id="uploadTest" class="easyui-filebox" name="uploadFile" data-options="buttonText:'选择用例'" style="width:250px">
+						<a onclick="updateFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true, iconCls:'icon-add'">上传用例</a>
+					</form>
+				<table id="uploadTestTable">
+
+				</table>
+			</div>
+			<table id="dataGrid" data-options="fit:true, border:false"></table>
+		</div>
+	</div>
+	<div id="file_view" style="display: none" class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center', title:'文件内容'">
+			<div id="file_panel" class="easyui-panel" title=""  data-options="fit:true"  >
+				<input id="source" style="padding: 10px" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<div data-options="region:'west', border:true, split:true, title:'UI用例列表'"  style="width:300px;overflow: auto; ">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'north', fit:false"  style="overflow: hidden" >
+			<div style="" data-options="fit:true" class="datagrid-toolbar">
+				<a onclick="reloadFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true, iconCls:'icon-reload'">刷新</a>
+			</div>
+		</div>
+	<div data-options="region:'center'">
+		<ul id="caseTree"   style="width:290px"></ul>
+	</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,1 +1,267 @@
-<h1>测试内容</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    {% set logo_path = g.logo %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>UI用例管理</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="shortcut icon" href="{{ url_for('static',filename='base/images/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='home/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='fonts/css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='ionicons/css/ionicons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='home/dist/css/AdminLTE.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='home/dist/css/skins/all-skins.min.css') }}">
+    <link rel="stylesheet" type="text/css"
+          href="{{ url_for('static',filename='home/plugins/datepicker/datepicker3.css') }}">
+    <link rel="stylesheet" type="text/css"
+          href="{{ url_for('static',filename='zTree/css/metroStyle/metroStyle.css') }}">
+    <style type="text/css">
+        * {
+            font-family: "Microsoft YaHei";
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        html {
+            overflow: hidden;
+        }
+
+    </style>
+    <script src="{{ url_for('static',filename='home/plugins/ie9/html5shiv.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='home/plugins/ie9/respond.min.js') }}"></script>
+</head>
+<style>
+    .box.box-primary {
+        border-top-color: #dd4b39
+    }
+
+    .button {
+        color: #333;
+    }
+</style>
+<body class="skin-red sidebar-mini">
+<section class="content">
+    <div class="row">
+        <div class="col-md-2">
+            <ul id="regionZTree" class="ztree"></ul>
+        </div>
+        <div class="col-md-10">
+            <div class="box box-primary">
+                <!-- /.box-header -->
+                <div class="box-body no-padding">
+                    <div class="mailbox-controls">
+                        <div class="btn-group">
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-plus"></i>新增
+                            </button>
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-edit"></i>修改</button>
+
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-play"></i>运行</button>
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-edit"></i>文本修改</button>
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-copy"></i>复制</button>
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-trash-o"></i>删除
+                            </button>
+                        </div>
+                        <!-- /.btn-group -->
+                        <button class="btn btn-default btn-sm" type="button"><i class="fa fa-refresh"></i></button>
+                        <div class="pull-right">
+                            <div class="btn-group">
+                                <button class="btn btn-default btn-sm" type="button"><i class="fa fa-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-default btn-sm" type="button"><i class="fa fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <!-- /.btn-group -->
+                        </div>
+                        <!-- /.pull-right -->
+                    </div>
+                    <div class="table-responsive mailbox-messages">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                            <tr>
+                                <th>
+                                    <div class="icheckbox_flat-blue" aria-checked="false" aria-disabled="false"
+                                         style="position: relative;"><input style="position: center; opacity: 100%;"
+                                                                            type="checkbox">
+                                        <ins class="iCheck-helper"
+                                             style="background: rgb(255, 255, 255); margin: 0px; padding: 0px; border: 0px; border-image: none; left: 0%; top: 0%; width: 100%; height: 100%; display: block; position: center; opacity: 0;"></ins>
+                                    </div>
+                                </th>
+                                <th class="mailbox-no">序号</th>
+                                <th class="mailbox-type">类型</th>
+                                <th class="mailbox-name">文件名</th>
+                                <th class="mailbox-size">大小</th>
+                                <th class="mailbox-date">最后修改时间</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div class="icheckbox_flat-blue" aria-checked="false" aria-disabled="false"
+                                         style="position: relative;"><input style="position: center; opacity: 100%;"
+                                                                            type="checkbox">
+                                        <ins class="iCheck-helper"
+                                             style="background: rgb(255, 255, 255); margin: 0px; padding: 0px; border: 0px; border-image: none; left: 0%; top: 0%; width: 100%; height: 100%; display: block; position: center; opacity: 0;"></ins>
+                                    </div>
+                                </td>
+                                <td class="mailbox-no">1</td>
+                                <td class="mailbox-type"><i class="fa fa-folder"></i></td>
+                                <td class="mailbox-name"><a href="#"><b>test1</b></a></td>
+                                <td class="mailbox-size">0KB</td>
+                                <td class="mailbox-date">2019-01-03 15:53:22</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <!-- /.table -->
+                    </div>
+                    <!-- /.mail-box-messages -->
+                </div>
+                <!-- /.box-body -->
+                <div class="box-footer no-padding">
+                    <div class="mailbox-controls">
+                        <!-- Check all button -->
+                        <button class="btn btn-default btn-sm checkbox-toggle" type="button"><i
+                                class="fa fa-square-o"></i>
+                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-trash-o"></i></button>
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-reply"></i></button>
+                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-share"></i></button>
+                        </div>
+                        <!-- /.btn-group -->
+                        <button class="btn btn-default btn-sm" type="button"><i class="fa fa-refresh"></i></button>
+                        <div class="pull-right">
+                            1-50/200
+                            <div class="btn-group">
+                                <button class="btn btn-default btn-sm" type="button"><i class="fa fa-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-default btn-sm" type="button"><i class="fa fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <!-- /.btn-group -->
+                        </div>
+                        <!-- /.pull-right -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script src="{{ url_for('static',filename='home/plugins/jQuery/jQuery-2.2.3.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/bootstrap/js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/slimScroll/jquery.slimscroll.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/fastclick/fastclick.js') }}"></script>
+<script src="{{ url_for('static',filename='home/dist/js/app.js') }}"></script>
+<script src="{{ url_for('static',filename='home/dist/js/demo.js') }}"></script>
+<script src="{{ url_for('static',filename='holder/holder.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static',filename='zTree/js/jquery.ztree.all.min.js') }}"></script>
+<script>
+    var setting = {
+        view: {
+            dblClickExpand: false,//双击节点时，是否自动展开父节点的标识
+            showLine: true,//是否显示节点之间的连线
+            fontCss: getFontCss,//字体样式函数
+            selectedMulti: false, //设置是否允许同时选中多个节点
+            addHoverDom: addHoverDom,//当鼠标移动到节点上时，显示用户自定义控件
+            removeHoverDom: removeHoverDom, //离开节点时的操作
+        },
+        edit: {
+            enable: true,//单独设置为true时，可加载修改、删除图标
+            editNameSelectAll: true,
+            showRemoveBtn: true,
+            showRenameBtn: true,
+            removeTitle: "删除",
+            renameTitle: "修改"
+        },
+        data: {
+            simpleData: { //简单数据模式
+                enable: true,
+                idKey: "id",
+                pIdKey: "pId",
+                system: "system",
+                rootPId: ""
+            }
+        },
+        callback: {
+            //  onClick: zTreeOnClick,//单击事件
+            onRemove: onRemove, //移除事件
+            onRename: onRename, //修改事件
+            beforeRename: beforeRename,
+            beforeRemove: beforeRemove
+        }
+    };
+
+
+    function getFontCss(treeId, treeNode) {
+        return (!!treeNode.highlight) ? {color: "#A60000", "font-weight": "bold"} : {
+            color: "#333",
+            "font-weight": "normal"
+        };
+    }
+
+    function addHoverDom(treeId, treeNode) {
+        var sObj = $("#" + treeNode.tId + "_span"); //获取节点信息
+
+        if (treeNode.editNameFlag || $("#addBtn_" + treeNode.id).length > 0)return;
+
+        var addStr = "<span class='button add' id='addBtn_" + treeNode.id + "' title='新增' onfocus='this.blur();'></span>"; //定义添加按钮
+
+        sObj.after(addStr); //加载添加按钮
+        var btn = $("#addBtn_" + treeNode.id);
+        //绑定添加事件，并定义添加操作
+        if (btn) btn.bind("click", function () {
+            console.log("触发新增事件");
+            var zTree = $.fn.zTree.getZTreeObj(treeId);
+            //将新节点添加到数据库中
+            var name = 'NewNode';
+            $.post('./index.php?r=data/addtree&pid=' + treeNode.id + '&name=' + name, function (data) {
+                var newID = data; //获取新添加的节点Id
+                zTree.addNodes(treeNode, {id: newID, pId: treeNode.id, name: name}); //页面上添加节点
+                var node = zTree.getNodeByParam("id", newID, null); //根据新的id找到新添加的节点
+                zTree.selectNode(node); //让新添加的节点处于选中状态
+            });
+        });
+
+    }
+
+    function removeHoverDom(treeId, treeNode) {
+        $("#addBtn_" + treeNode.tId).unbind().remove();
+    }
+
+    function onRename(e, treeId, treeNode, isCancel) {
+        //需要对名字做判定的，可以来这里写~~
+        $.post('./index.php?r=data/modifyname&id=' + treeNode.id + '&name=' + treeNode.name);
+    }
+
+    function beforeRename(treeId, treeNode, newName) {
+        if (newName.length === 0) {
+            alert("节点名称不能为空.");
+            return false;
+        }
+        return true;
+    }
+
+    function onRemove(e, treeId, treeNode) {
+        //需要对删除做判定或者其它操作，在这里写~~
+        $.post('./index.php?r=data/del&id=' + treeNode.id);
+    }
+
+    function beforeRemove(treeId, treeNode) {
+        var zTree = $.fn.zTree.getZTreeObj(treeId);
+        console.log(zTree);
+        zTree.selectNode(treeNode);
+        return confirm("确认删除节点 -- " + treeNode.name + " 吗？");
+    }
+
+    var citynodes = [{id: 0, pId: -1, name: "auto", open: false, nocheck: true},
+        {id: 1, pId: 0, name: "test1"}];
+    zTreeObj = $.fn.zTree.init($("#regionZTree"), setting, citynodes);
+
+</script>
+</body>
+</html>

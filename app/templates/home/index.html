@@ -164,18 +164,18 @@
             var $a = $(this).css("border", "");
 
             //判断是否含有要搜索的字符串
-            if (text){
+            if (text) {
                 if ($a.children("span.menu-text").text().indexOf(text) >= 0) {
 
-                //如果a标签的父级是隐藏的就展开
-                $ul = $a.parents("ul");
+                    //如果a标签的父级是隐藏的就展开
+                    $ul = $a.parents("ul");
 
-                if ($ul.is(":hidden")) {
-                    $a.parents("ul").prev().click();
-                }
+                    if ($ul.is(":hidden")) {
+                        $a.parents("ul").prev().click();
+                    }
 
-                //点击该菜单
-                $a.click().css("border", "1px solid");
+                    //点击该菜单
+                    $a.click().css("border", "1px solid");
 
 //                return false;
                 }
@@ -186,7 +186,7 @@
 
     // 搜索框输入回车触发search_menu()方法
     $('input[name=q]').keydown(function (event) {
-        e = event ? event :(window.event ? window.event : null);
+        e = event ? event : (window.event ? window.event : null);
         if (e.keyCode === 13) {
             search_menu();
             return false;

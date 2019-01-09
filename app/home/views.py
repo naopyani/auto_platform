@@ -209,3 +209,21 @@ def api_result():
     接口自动化测试结果管理
     """
     return render_template("home/api_result.html")
+
+
+@home.route("/ui/test/operate", methods=["GET", "POST"])
+@user_login_req
+def ui_test_operate():
+    """
+    UI用例操作
+    """
+    return render_template("home/ui_test_operate.html")
+
+
+@home.route("/api/test/operate", methods=["GET", "POST"])
+@user_login_req
+def api_test_operate():
+    """
+    api用例操作
+    """
+    return render_template("home/api_test_operate.html")
