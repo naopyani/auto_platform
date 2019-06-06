@@ -184,6 +184,15 @@ def ui_test():
     return render_template("home/ui_test.html")
 
 
+@home.route("/ui/test/add", methods=["GET", "POST"])
+@user_login_req
+def ui_add_test():
+    """
+    ui自动化新增测试用例
+    """
+    return render_template("home/ui_add_test.html")
+
+
 @home.route("/ui/result", methods=["GET", "POST"])
 @user_login_req
 def ui_result():

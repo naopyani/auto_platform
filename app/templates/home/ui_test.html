@@ -17,52 +17,71 @@
     <link rel="stylesheet" type="text/css"
           href="{{ url_for('static',filename='zTree/css/metroStyle/metroStyle.css') }}">
     <style type="text/css">
-        * {
-            font-family: "Microsoft YaHei";
-        }
-
         .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
             vertical-align: middle;
-            text-align: center;
+            text-align: left;
         }
 
         html {
             overflow: hidden;
         }
 
+        .box.box-primary {
+            border-top-color: #dd4b39;
+        }
+
+        .button {
+            color: #333;
+        }
+
+        .ztree li span.button.switch.level0 {
+            visibility: hidden;
+            width: 1px;
+        }
+
+        .ztree li ul.level0 {
+            padding: 0;
+            background: none;
+        }
+
     </style>
     <script src="{{ url_for('static',filename='home/plugins/ie9/html5shiv.min.js') }}"></script>
     <script src="{{ url_for('static',filename='home/plugins/ie9/respond.min.js') }}"></script>
 </head>
-<style>
-    .box.box-primary {
-        border-top-color: #dd4b39
-    }
-
-    .button {
-        color: #333;
-    }
-</style>
 <body class="skin-red sidebar-mini">
 <section class="content">
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-3" style="overflow:auto;">
             <ul id="regionZTree" class="ztree"></ul>
         </div>
-        <div class="col-md-10">
+        <div class="col-md-9">
             <div class="box box-primary">
                 <!-- /.box-header -->
                 <div class="box-body no-padding">
                     <div class="mailbox-controls">
+                        <span id="currentDir" class="col-lg-auto"><strong>当前目录：</strong><span
+                                id="currentPath">path</span>
+                        </span>
+                        <div class="input-group col-lg-auto">
+                            <input class="form-control" id="addDir" title="新增目录" type="text" placeholder="请输入新增目录"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-info" id="addDirFunc" onclick="return false;"
+                                        type="button">新增目录</button>
+                                <button class="btn btn-danger" id="removeDirFunc" onclick="return false;"
+                                        type="button">删除目录</button>
+                            </span>
+                        </div>
                         <div class="btn-group">
-                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-plus"></i>新增
+                            <button class="btn bg-gray btn-sm" onclick="AddUiTest()"
+                                    type="button">
+                                <i
+                                        class="fa fa-plus"></i>新增脚本
                             </button>
-                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-edit"></i>修改</button>
-
-                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-play"></i>运行</button>
-                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-edit"></i>文本修改</button>
-                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-copy"></i>复制</button>
-                            <button class="btn btn-default btn-sm" type="button"><i class="fa fa-trash-o"></i>删除
+                            <button class="btn bg-purple btn-sm" type="button"><i class="fa fa-edit"></i>修改脚本</button>
+                            <button class="btn bg-maroon btn-sm" type="button"><i class="fa fa-play"></i>运行</button>
+                            <button class="btn bg-orange btn-sm" type="button"><i class="fa fa-edit"></i>脚本修改</button>
+                            <button class="btn bg-aqua btn-sm" type="button"><i class="fa fa-copy"></i>复制</button>
+                            <button class="btn bg-olive btn-sm" type="button"><i class="fa fa-trash-o"></i>删除
                             </button>
                         </div>
                         <!-- /.btn-group -->
@@ -85,9 +104,10 @@
                                 <th>
                                     <div class="icheckbox_flat-blue" aria-checked="false" aria-disabled="false"
                                          style="position: relative;"><input style="position: center; opacity: 100%;"
+                                                                            title="selectAll"
                                                                             type="checkbox">
                                         <ins class="iCheck-helper"
-                                             style="background: rgb(255, 255, 255); margin: 0px; padding: 0px; border: 0px; border-image: none; left: 0%; top: 0%; width: 100%; height: 100%; display: block; position: center; opacity: 0;"></ins>
+                                             style="background: rgb(255, 255, 255); margin: 0; padding: 0; border: 0; border-image: none; left: 0; top: 0; width: 100%; height: 100%; display: block; position: center; opacity: 0;"></ins>
                                     </div>
                                 </th>
                                 <th class="mailbox-no">序号</th>
@@ -102,9 +122,10 @@
                                 <td>
                                     <div class="icheckbox_flat-blue" aria-checked="false" aria-disabled="false"
                                          style="position: relative;"><input style="position: center; opacity: 100%;"
+                                                                            title="select"
                                                                             type="checkbox">
                                         <ins class="iCheck-helper"
-                                             style="background: rgb(255, 255, 255); margin: 0px; padding: 0px; border: 0px; border-image: none; left: 0%; top: 0%; width: 100%; height: 100%; display: block; position: center; opacity: 0;"></ins>
+                                             style="background: rgb(255, 255, 255); margin: 0; padding: 0; border: 0; border-image: none; left: 0; top: 0; width: 100%; height: 100%; display: block; position: center; opacity: 0;"></ins>
                                     </div>
                                 </td>
                                 <td class="mailbox-no">1</td>
@@ -151,7 +172,85 @@
     </div>
 
 </section>
+<div class="modal fade" id="addUiTest" tabindex="-1" role="dialog" aria-labelledby="uiTestLabel">
+    <div class="modal-dialog" role="document" style="width: 70%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="uiTestLabel"><strong>新增脚本</strong></h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" id="AddUiForm" style="overflow:auto;">
+                    <div class="form-group">
+                        <label>文件名称</label>
+                        <input type="text" name="fileName" required class="form-control" placeholder="请输入文件名！"/>
+                    </div>
+                    <div class="form-group">
+                        <label>支持最低版本</label>
+                        <input type="text" class="form-control" placeholder="未填写则不限制最低版本">
+                    </div>
+                    <div class="form-group">
+                        <label>支持最高版本</label>
+                        <input type="text" class="form-control" placeholder="未填写则不限制最高版本">
+                    </div>
+                    <div class="form-group">
+                        <label>选择用例类型</label>
+                        <select class="form-control" title="选择用例类型">
+                            <option value="2">前置用例</option>
+                            <option value="1">普通用例</option>
+                            <option value="3">后置用例</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>文本备注</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>前置用例</label>
+                        <div>
+                            <a onclick="addChild(event, 'beforeCase');" href="javascript:void(0);"
+                               class="btn bg-maroon btn-sm fa fa-plus"></a>
+                            &nbsp;&nbsp;<a
+                                onclick="delLastOne('beforeCase')" href="javascript:void(0);"
+                                class="btn bg-orange btn-sm fa fa-minus"></a>
+                        </div>
+                        <div id="beforeCaseSelect">
 
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>后置用例</label>
+                        <div>
+                            <a onclick="addChild(event, 'afterCase');" href="javascript:void(0);"
+                               class="btn bg-maroon btn-sm fa fa-plus"></a>
+                            &nbsp;&nbsp;<a
+                                onclick="delLastOne('afterCase')" class="btn bg-orange btn-sm fa fa-minus"></a>
+                        </div>
+                        <div id="afterCaseSelect">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>步骤：</label>
+                        <div>
+                            <a onclick="addStep()"
+                               class="btn bg-maroon btn-sm fa fa-plus"></a>
+                            &nbsp;&nbsp;<a
+                                onclick="delLastOne('step')" class="btn bg-orange btn-sm fa fa-minus"></a>
+                        </div>
+                        <div id="step" class="form-group"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="submit" class="btn btn-primary col-lg-3">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="{{ url_for('static',filename='home/plugins/jQuery/jQuery-2.2.3.min.js') }}"></script>
 <script src="{{ url_for('static',filename='home/bootstrap/js/bootstrap.min.js') }}"></script>
 <script src="{{ url_for('static',filename='home/plugins/slimScroll/jquery.slimscroll.min.js') }}"></script>
@@ -159,108 +258,447 @@
 <script src="{{ url_for('static',filename='home/dist/js/app.js') }}"></script>
 <script src="{{ url_for('static',filename='home/dist/js/demo.js') }}"></script>
 <script src="{{ url_for('static',filename='holder/holder.min.js') }}"></script>
+<script src="{{ url_for('static',filename='home/dist/js/app_iframe.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/datepicker/bootstrap-datepicker.js') }}"></script>
+<script src="{{ url_for('static',filename='home/plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js') }}"
+        charset="UTF-8"></script>
 <script type="text/javascript" src="{{ url_for('static',filename='zTree/js/jquery.ztree.all.min.js') }}"></script>
 <script>
+    function AddUiTest() {
+        // 用静态框来做新增
+        $('#addUiTest').modal({backdrop: false, keyboard: false});
+    }
+
+
+    function showOper(Id) {
+        $.ajax({
+            async: false,
+            type: "GET",
+            url: "../tree_api/get_oper/",
+            contentType: "application/json",
+            success: function (data) {
+                var operSelect = document.getElementById('oper' + Id);
+                // console.log("此时的选择框");
+                // console.log(operSelect);
+                if (data != null) {
+                    // console.log("下拉列表内容");
+                    // console.log(data);
+                    for (var i = 0; i < data.length; i++) {
+                        if (i === 0) {
+                            var selected = data[i].split("(")[0];
+                        }
+                        var value = data[i].split("(")[0];
+                        var text = data[i].split("(")[1].split(")")[0];
+                        // console.log(text);
+                        // console.log(value);
+                        if (i === 0) {
+                            operSelect.options.add(new Option(text, value, true, true));
+                        } else {
+                            operSelect.options.add(new Option(text, value));
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function showOperAction(Id) {
+        var selected = $("#oper" + Id).val();
+        // console.log('被选中的值');
+        // console.log(selected);
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "../tree_api/get_oper_action/",
+            contentType: "application/json",
+            data: JSON.stringify({
+                'name': selected,
+            }),
+            success: function (data) {
+                // console.log("此时的operAction");
+                // console.log(data);
+                var operActionSelect = document.getElementById('operAction' + Id);
+                $("#operAction" + Id + " option").remove();
+                for (var i = 0; i < data.length; i++) {
+                    if (i === 0) {
+                        var selected = data[i][0].split("(")[0];
+                    }
+                    var value = data[i][0].split("(")[0];
+                    var text = data[i][0].split("(")[1].split(")")[0];
+                    // console.log(text);
+                    // console.log(value);
+                    operActionSelect.options.add(new Option(text, value, true));
+                }
+                var operAction = $("#operAction" + Id);
+                // 写参数
+                showParam(Id, data);
+                $("#oper" + Id).on("change", function (event) {
+                    // console.log("此时select的event");
+                    // console.log(event);
+                    showOperAction(Id)
+                });
+                operAction.on("change", function (event) {
+                    showParam(Id, data)
+                });
+            }
+        });
+    }
+
+    function showParam(Id, data) {
+        var operAction = $("#operAction" + Id);
+        var paramSelected = operAction.val();
+        var paramId = $("#param" + Id);
+        $("#param" + Id + " tr").remove();
+        for (i = 0; i < data.length; i++) {
+            if (paramSelected === data[i][0].split("(")[0]) {
+                if (data[i][1]) {
+                    var paramList = data[i][1].split(";");
+                    for (var j = 0; j < paramList.length; j++) {
+                        var paramValue = paramList[j].split("(")[0];
+                        var paramText = paramList[j].split("(")[1].split(")")[0];
+                        // 第一行的内容
+                        var paramTr = "";
+
+                        if (paramText === "定位方式") {
+                            let selectStyle = paramValue + Id;
+                            paramTr = "<tr><td value='" + paramValue + "' class='col-lg-offset-0'>" + paramText + "</td><td class='col-lg-8'><select class='col-lg-offset-0 col-lg-12' id='" + selectStyle + "'></select></td></tr>";
+                            paramId.append(paramTr);
+                            $.ajax({
+                                async: false,
+                                type: "GET",
+                                url: "../tree_api/get_style/",
+                                contentType: "application/json",
+                                success: function (data) {
+                                    var styleSelect = document.getElementById(selectStyle);
+                                    $("#" + selectStyle + " option").remove();
+                                    for (var i = 0; i < data.length; i++) {
+                                        var text = data[i];
+                                        styleSelect.options.add(new Option(text));
+                                    }
+                                }
+                            });
+                        } else if (paramValue === "time" && (paramSelected.indexOf("wait_") !== -1)) {
+                            paramTr = "<tr><td value='" + paramValue + "' class='col-lg-offset-0'>" + paramText + "</td><td class='col-lg-8'><input class='col-lg-offset-0 col-lg-12' value='10' /></td></tr>";
+                            paramId.append(paramTr);
+                        } else if (paramValue === "time" && (paramSelected.indexOf("action_long") !== -1)) {
+                            paramTr = "<tr><td value='" + paramValue + "' class='col-lg-offset-0'>" + paramText + "</td><td class='col-lg-8'><input class='col-lg-offset-0 col-lg-12' value='1' /></td></tr>";
+                            paramId.append(paramTr);
+                        } else if (paramValue === "time") {
+                            paramTr = "<tr><td value='" + paramValue + "' class='col-lg-offset-0'>" + paramText + "</td><td class='col-lg-8'><input class='col-lg-offset-0 col-lg-12' value='0' /></td></tr>";
+                            paramId.append(paramTr);
+                        } else if (paramValue === "index") {
+                            paramTr = "<tr><td value='" + paramValue + "' class='col-lg-offset-0'>" + paramText + "</td><td class='col-lg-8'><input class='col-lg-offset-0 col-lg-12' value='0' /></td></tr>";
+                            paramId.append(paramTr);
+                        } else if (paramValue === "loc") {
+                            paramTr = "<tr><td value='" + paramValue + "' class='col-lg-offset-0'>" + paramText + "</td><td class='col-lg-8'><input class='col-lg-offset-0 col-lg-12' value='0.5' /></td></tr>";
+                            paramId.append(paramTr);
+                        } else {
+                            paramTr = "<tr><td value='" + paramValue + "' class='col-lg-offset-0'>" + paramText + "</td><td class='col-lg-8'><input class='col-lg-offset-0 col-lg-12' /></td></tr>";
+                            paramId.append(paramTr);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    var stepNum = 1;
+
+    function addStep() {
+        var boxBody = $('<div></div>');
+        boxBody.attr('class', 'box-body col-lg-12');
+
+        // 第一行的内容
+        var parentTr = $('<tr></tr>');
+
+        var child1 = $('<td></td>');
+        child1.attr('id', 'step' + stepNum);
+        child1.attr('class', 'col-lg-1');
+
+        var child2 = $('<td></td>');
+        var child21 = $('<select></select>');
+        child21.attr('id', 'oper' + stepNum);
+        child2.attr('class', 'col-lg-1');
+
+        child2.append(child21);
+
+        var child3 = $('<td></td>');
+        var child31 = $('<select></select>');
+        child31.attr('id', 'operAction' + stepNum);
+        child3.attr('class', 'col-lg-3');
+        child3.append(child31);
+
+        var child4 = $('<td></td>');
+        var child41 = $('<table></table>');
+        child41.attr('id', 'param' + stepNum);
+        child41.attr('class', 'col-lg-12');
+        child4.attr('class', 'col-lg-6');
+        child4.append(child41);
+
+        var child5 = $('<td></td>');
+        child5.attr('id', 'Button' + stepNum);
+        child5.attr('class', 'col-lg-1 btn-group');
+
+        var child51 = $('<a></a>');
+        child51.attr('id', 'addButton' + stepNum);
+        child51.attr('class', 'fa fa-plus');
+
+        var child52 = $('<a></a>');
+        child52.attr('id', 'removeButton' + stepNum);
+        child52.attr('class', 'fa fa-minus');
+        child5.append(child51).append("&nbsp;&nbsp;").append(child52);
+
+        parentTr.append(child1).append(child2).append(child3).append(child4).append(child5);
+        if (stepNum === 1) {
+            var table = $('<table></table>');
+            table.attr('class', 'table');
+            var tbody = $('<tbody></tbody>');
+            tbody.attr('id', 'tbody');
+            var tr = "<tr><th class='col-lg-1'>步骤</th><th class='col-lg-1'>动作</th><th class='col-lg-3'>类型</th><th class='col-lg-6'>参数</th><th class='col-lg-1'>操作</th></tr>";
+            tbody.append(tr).append(parentTr);
+            table.append(tbody);
+            boxBody.append(table);
+            $('#step').append(boxBody);
+        } else {
+            $('#tbody').append(parentTr);
+        }
+        $('#step' + stepNum).text(stepNum);
+        showOper(stepNum);
+        showOperAction(stepNum);
+
+        stepNum += 1;
+    }
+
     var setting = {
         view: {
-            dblClickExpand: false,//双击节点时，是否自动展开父节点的标识
+            dblClickExpand: dblClickExpand,//双击节点时，是否自动展开父节点的标识
             showLine: true,//是否显示节点之间的连线
-            fontCss: getFontCss,//字体样式函数
             selectedMulti: false, //设置是否允许同时选中多个节点
-            addHoverDom: addHoverDom,//当鼠标移动到节点上时，显示用户自定义控件
-            removeHoverDom: removeHoverDom, //离开节点时的操作
         },
         edit: {
             enable: true,//单独设置为true时，可加载修改、删除图标
             editNameSelectAll: true,
-            showRemoveBtn: true,
-            showRenameBtn: true,
+            showRemoveBtn: false,
+            showRenameBtn: false,
             removeTitle: "删除",
             renameTitle: "修改"
         },
         data: {
+            keep: {
+                parent: true,
+                leaf: true
+            },
             simpleData: { //简单数据模式
                 enable: true,
-                idKey: "id",
-                pIdKey: "pId",
-                system: "system",
-                rootPId: ""
             }
         },
         callback: {
-            //  onClick: zTreeOnClick,//单击事件
-            onRemove: onRemove, //移除事件
-            onRename: onRename, //修改事件
+            onClick: zTreeOnClick,//单击事件
+            beforeDrag: beforeDrag,
+            // onRemove: onRemove, //移除事件
+            // onRename: onRename, //修改事件
             beforeRename: beforeRename,
             beforeRemove: beforeRemove
         }
     };
 
-
-    function getFontCss(treeId, treeNode) {
-        return (!!treeNode.highlight) ? {color: "#A60000", "font-weight": "bold"} : {
-            color: "#333",
-            "font-weight": "normal"
-        };
+    function dblClickExpand(treeId, treeNode) {
+        return treeNode.level > 0;
     }
 
-    function addHoverDom(treeId, treeNode) {
-        var sObj = $("#" + treeNode.tId + "_span"); //获取节点信息
+    function getPathText(node) {
+        var s = node.name;
+        while (node = node.getParentNode()) s = node.name + "/" + s;
+        return s;
+    }
 
-        if (treeNode.editNameFlag || $("#addBtn_" + treeNode.id).length > 0)return;
-
-        var addStr = "<span class='button add' id='addBtn_" + treeNode.id + "' title='新增' onfocus='this.blur();'></span>"; //定义添加按钮
-
-        sObj.after(addStr); //加载添加按钮
-        var btn = $("#addBtn_" + treeNode.id);
-        //绑定添加事件，并定义添加操作
-        if (btn) btn.bind("click", function () {
-            console.log("触发新增事件");
-            var zTree = $.fn.zTree.getZTreeObj(treeId);
-            //将新节点添加到数据库中
-            var name = 'NewNode';
-            $.post('./index.php?r=data/addtree&pid=' + treeNode.id + '&name=' + name, function (data) {
-                var newID = data; //获取新添加的节点Id
-                zTree.addNodes(treeNode, {id: newID, pId: treeNode.id, name: name}); //页面上添加节点
-                var node = zTree.getNodeByParam("id", newID, null); //根据新的id找到新添加的节点
-                zTree.selectNode(node); //让新添加的节点处于选中状态
-            });
+    function getTreeId() {
+        var dataId;
+        $.ajax({
+            async: false,
+            type: "GET",
+            url: "../tree_api/get_tree_id/",
+            contentType: "application/json",
+            success: function (data) {
+                // console.log("获取成功TreeId！");
+                // console.log(data);
+                dataId = data;
+            }
         });
-
+        return dataId
     }
 
-    function removeHoverDom(treeId, treeNode) {
-        $("#addBtn_" + treeNode.tId).unbind().remove();
+    function getTree() {
+        var treeData;
+        $.ajax({
+            async: false,
+            type: "GET",
+            url: "../tree_api/get_tree/",
+            contentType: "application/json",
+            success: function (data) {
+                // console.log("获取成功Tree！");
+                // console.log(data);
+                treeData = data;
+            }
+        });
+        return treeData
     }
 
-    function onRename(e, treeId, treeNode, isCancel) {
-        //需要对名字做判定的，可以来这里写~~
-        $.post('./index.php?r=data/modifyname&id=' + treeNode.id + '&name=' + treeNode.name);
+    function getTreePath(treeId) {
+        var TreePath;
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "../tree_api/get_loc_path/",
+            contentType: "application/json",
+            data: JSON.stringify({
+                'id': treeId,
+            }),
+            success: function (data) {
+                // console.log("获取成功Tree！");
+                // console.log(data);
+                TreePath = data;
+            }
+        });
+        return TreePath
+    }
+
+    var className = "dark";
+
+    function beforeDrag(treeId, treeNodes) {
+        return false;
+    }
+
+    function beforeRemove(treeId, treeNodes) {
+        className = (className === "dark" ? "" : "dark");
+        return confirm("确认删除 节点 -- " + treeNodes.name + " 吗？");
     }
 
     function beforeRename(treeId, treeNode, newName) {
         if (newName.length === 0) {
-            alert("节点名称不能为空.");
+            alert("节点名称不能为空。");
+            var zTree = $.fn.zTree.getZTreeObj("regionZTree");
+            setTimeout(function () {
+                zTree.editName(treeNode)
+            }, 10);
             return false;
         }
         return true;
     }
 
-    function onRemove(e, treeId, treeNode) {
-        //需要对删除做判定或者其它操作，在这里写~~
-        $.post('./index.php?r=data/del&id=' + treeNode.id);
+    function AddDir(e) {
+        var addDir = $("#addDir");
+        var inputDir = addDir.val();
+        addDir.val("");
+        var isParent = e.data.isParent;
+        if (inputDir) {
+            var zTree = $.fn.zTree.getZTreeObj("regionZTree"),
+                nodes = zTree.getSelectedNodes(),
+                treeNode = nodes[0];
+            var tree_id = getTreeId();
+            if (treeNode) {
+                var loc_path = getPathText(treeNode);
+                var path = loc_path + "/" + inputDir;
+                $.ajax({
+                    type: "POST",
+                    url: "../tree_api/add_tree/",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        'id': tree_id,
+                        'pid': treeNode.id,
+                        'name': inputDir,
+                        'is_parent': isParent,
+                        'loc_path': path
+                    }),
+                    success: function () {
+                        console.log("新增节点成功！" + path);
+                    }
+                });
+            } else {
+                path = inputDir;
+                $.ajax({
+                    type: "POST",
+                    url: "../tree_api/add_tree/",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        'id': tree_id,
+                        'pid': 0,
+                        'name': inputDir,
+                        'is_parent': isParent,
+                        'loc_path': path
+                    }),
+                    success: function () {
+                        console.log("新增节点成功！" + path);
+                    }
+                });
+            }
+            var treeData = getTree();
+            // console.log("新增后的treeData");
+            // console.log(treeData);
+            zTreeObj = $.fn.zTree.init($("#regionZTree"), setting, treeData);
+            var getNodes = zTreeObj.getNodes();
+            if (getNodes.length > 0) {
+                zTreeObj.selectNode(getNodes[0]);//默认选中根节点
+            }
+        } else {
+            alert("请先输入要新增的文件夹！")
+        }
     }
 
-    function beforeRemove(treeId, treeNode) {
-        var zTree = $.fn.zTree.getZTreeObj(treeId);
-        console.log(zTree);
-        zTree.selectNode(treeNode);
-        return confirm("确认删除节点 -- " + treeNode.name + " 吗？");
+    function removeDir() {
+        var zTree = $.fn.zTree.getZTreeObj("regionZTree"),
+            nodes = zTree.getSelectedNodes(),
+            treeNode = nodes[0];
+        // console.log(nodes);
+        if (nodes.length === 0) {
+            alert("请先选择一个节点");
+            return;
+        } else if (treeNode.children) {
+            if (treeNode.children.length > 0) {
+                alert("该目录含有子文件，无法删除！");
+                return;
+            }
+        }
+        zTree.removeNode(treeNode, "checked");
+        $.ajax({
+            type: "POST",
+            url: "../tree_api/del_tree/",
+            contentType: "application/json",
+            data: JSON.stringify({
+                'id': treeNode.id
+            }),
+            success: function () {
+                console.log("删除节点成功！" + treeNode.id);
+            }
+        });
+        var getNodes = zTreeObj.getNodes();
+        if (getNodes.length > 0) {
+            zTreeObj.selectNode(getNodes[0]);//默认选中根节点
+        }
     }
 
-    var citynodes = [{id: 0, pId: -1, name: "auto", open: false, nocheck: true},
-        {id: 1, pId: 0, name: "test1"}];
-    zTreeObj = $.fn.zTree.init($("#regionZTree"), setting, citynodes);
+    // 节点点击事件
+    function zTreeOnClick() {
+        var zTree = $.fn.zTree.getZTreeObj("regionZTree"), nodes = zTree.getSelectedNodes(), treeNode = nodes[0];
+        if (treeNode) {
+            var locPath = getTreePath(treeNode.id);
+            $("#currentPath").text(locPath);
+        }
+    }
+
+    $("#addDirFunc").bind("click", {isParent: true}, AddDir);
+    $("#removeDirFunc").bind("click", {isParent: true}, removeDir);
+    $("#addLeaf").bind("click", {isParent: false}, AddDir);
+    $(document).ready(function () {
+        var treeData = getTree();
+        // console.log("新增后的treeData");
+        // console.log(treeData);
+        zTreeObj = $.fn.zTree.init($("#regionZTree"), setting, treeData);
+        var nodes = zTreeObj.getNodes();
+        if (nodes.length > 0) {
+            zTreeObj.selectNode(nodes[0]);//默认选中根节点
+        }
+    });
 
 </script>
 </body>
