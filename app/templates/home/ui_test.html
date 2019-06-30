@@ -44,6 +44,10 @@
             background: none;
         }
 
+        .org-select {
+            cursor: default;
+            z-index: -1;
+        }
     </style>
     <script src="{{ url_for('static',filename='home/plugins/ie9/html5shiv.min.js') }}"></script>
     <script src="{{ url_for('static',filename='home/plugins/ie9/respond.min.js') }}"></script>
@@ -189,15 +193,15 @@
                     </div>
                     <div class="form-group">
                         <label>支持最低版本</label>
-                        <input type="text" class="form-control" placeholder="未填写则不限制最低版本">
+                        <input type="text" class="form-control" name="minimum_version" placeholder="未填写则不限制最低版本">
                     </div>
                     <div class="form-group">
                         <label>支持最高版本</label>
-                        <input type="text" class="form-control" placeholder="未填写则不限制最高版本">
+                        <input type="text" class="form-control" name="latest_version" placeholder="未填写则不限制最高版本">
                     </div>
                     <div class="form-group">
                         <label>选择用例类型</label>
-                        <select class="form-control" title="选择用例类型">
+                        <select class="form-control" name="case-type" title="选择用例类型">
                             <option value="2">前置用例</option>
                             <option value="1">普通用例</option>
                             <option value="3">后置用例</option>
@@ -205,7 +209,7 @@
                     </div>
                     <div class="form-group">
                         <label>文本备注</label>
-                        <input type="text" class="form-control" placeholder="">
+                        <input type="text" name="remark" class="form-control" placeholder="">
                     </div>
                     <div class="form-group">
                         <label>前置用例</label>
@@ -240,7 +244,17 @@
                             &nbsp;&nbsp;<a
                                 onclick="delLastOne('step')" class="btn bg-orange btn-sm fa fa-minus"></a>
                         </div>
-                        <div id="step" class="form-group"></div>
+                        <table class="table" id="tableStep">
+                            <tbody id="tbody">
+                            <tr>
+                                <th class="col-lg-1">步骤</th>
+                                <th class="col-lg-1">动作</th>
+                                <th class="col-lg-3">类型</th>
+                                <th class="col-lg-6">参数</th>
+                                <th class="col-lg-1">操作</th>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -264,6 +278,11 @@
         charset="UTF-8"></script>
 <script type="text/javascript" src="{{ url_for('static',filename='zTree/js/jquery.ztree.all.min.js') }}"></script>
 <script>
+    $("#AddUiForm").submit(function () {
+        console.log("需要编写提交数据的步骤");
+
+    });
+
     function AddUiTest() {
         // 用静态框来做新增
         $('#addUiTest').modal({backdrop: false, keyboard: false});
@@ -402,6 +421,124 @@
         }
     }
 
+    let beforeCaseNum = 1;
+    let afterCaseNum = 1;
+    let CaseNum = 0;
+    let selectId = '';
+    var setting2 = {
+        data: {
+            simpleData: {
+                enable: true
+            }
+        },
+        callback: {
+            onClick: OnClick
+        },
+        view: {
+            fontCss: {fontSize: '14px'}
+        }
+    };
+    let initTreeData = function (selectId) {
+        // 初始组织树状图
+        let treeData = getTree();
+        zTreeObj = $.fn.zTree.init($("#treeDemo" + selectId), setting2, treeData);
+    };
+
+    function OnClick(event, treeId, treeNode) {
+        console.log("此时selectId");
+        console.log(selectId);
+        $("#" + selectId).val(treeNode.name);
+        $("#" + 'code' + selectId).val(treeNode.Id);
+        hideTree();
+    }
+
+    // 下拉框显示、隐藏
+    function showTree(event) {
+        selectId = event.toElement.id;
+        initTreeData(selectId);
+        let tree = $("#tree" + selectId);
+        if (tree.css('display') === 'none') {
+            tree.css('display', 'block');
+        } else {
+            tree.css('display', 'none');
+        }
+        $('body').bind("mousedown", onBodyDownByActionType);
+    }
+
+    function hideTree() {
+        let tree = $("#tree" + selectId);
+        tree.css('display', 'none');
+        $('body').unbind("mousedown", onBodyDownByActionType);
+        return false;
+    }
+
+    function onBodyDownByActionType(event) {
+        console.log(event);
+        console.log('treeDemo' + selectId);
+        if (event.target.id.indexOf('treeDemo' + selectId) === -1) {
+            hideTree();
+        }
+    }
+
+    let createSelect = function (typeName) {
+        if (typeName === 'beforeCase') {
+            CaseNum = beforeCaseNum;
+        }
+        else {
+            CaseNum = afterCaseNum;
+        }
+        <!-- 模拟select点击框 以及option的text值显示-->
+
+        let parentDiv = $('<div></div>');
+        parentDiv.attr('id', 'div' + typeName + CaseNum);
+
+        let parentSelect = '<input id="' + typeName + CaseNum + '" class="form-control org-select" onclick="showTree(event)"  readonly >';
+
+        <!-- 模拟select右侧倒三角 -->
+        let child1 = $('<i></i>');
+        child1.addClass('trg');
+        child1.attr('style', 'position: absolute;');
+
+        <!-- 存储 模拟select的value值 -->
+        let child2 = $('<input>');
+        child2.attr('id', 'code' + typeName + CaseNum);
+        child2.attr('type', 'hidden');
+        child2.attr('name', 'code' + typeName + CaseNum);
+        <!-- zTree树状图 相对定位在其下方 -->
+        let child3 = $('<div></div>');
+        child3.attr('id', 'tree' + typeName + CaseNum);
+        child3.addClass('ztree form-control');
+        child3.attr('style', 'display:none; position: absolute;height:auto;');
+
+        let child4 = $('<ul></ul>');
+        child4.attr('id', 'treeDemo' + typeName + CaseNum);
+        child3.append(child4); //将子option添加到父select中
+
+        parentDiv.append(parentSelect).append(child1).append(child2).append(child3);
+
+        if (typeName === 'beforeCase') {
+            $('#beforeCaseSelect').append(parentDiv);
+
+        }
+        else {
+            $('#afterCaseSelect').append(parentDiv);
+        }
+    };
+
+    function addChild(e, typeName) {
+        let obj = e.target;
+        console.log(obj);
+        if (typeName === 'beforeCase') {
+            createSelect(typeName);
+            beforeCaseNum += 1;
+        }
+        else {
+            createSelect(typeName);
+            afterCaseNum += 1;
+        }
+    }
+
+
     var stepNum = 1;
 
     function addStep() {
@@ -410,6 +547,7 @@
 
         // 第一行的内容
         var parentTr = $('<tr></tr>');
+        parentTr.attr('id', 'tr' + stepNum);
 
         var child1 = $('<td></td>');
         child1.attr('id', 'step' + stepNum);
@@ -449,24 +587,34 @@
         child5.append(child51).append("&nbsp;&nbsp;").append(child52);
 
         parentTr.append(child1).append(child2).append(child3).append(child4).append(child5);
-        if (stepNum === 1) {
-            var table = $('<table></table>');
-            table.attr('class', 'table');
-            var tbody = $('<tbody></tbody>');
-            tbody.attr('id', 'tbody');
-            var tr = "<tr><th class='col-lg-1'>步骤</th><th class='col-lg-1'>动作</th><th class='col-lg-3'>类型</th><th class='col-lg-6'>参数</th><th class='col-lg-1'>操作</th></tr>";
-            tbody.append(tr).append(parentTr);
-            table.append(tbody);
-            boxBody.append(table);
-            $('#step').append(boxBody);
-        } else {
-            $('#tbody').append(parentTr);
-        }
+        $('#tbody').append(parentTr);
         $('#step' + stepNum).text(stepNum);
         showOper(stepNum);
         showOperAction(stepNum);
 
         stepNum += 1;
+    }
+
+
+    function delLastOne(typeName) {
+        if (typeName === 'beforeCase') {
+            beforeCaseNum -= 1;
+            $('#' + 'div' + typeName + beforeCaseNum).remove();
+        }
+        else if (typeName === 'afterCase') {
+            afterCaseNum -= 1;
+            $('#' + 'div' + typeName + afterCaseNum).remove();
+        }
+        else {
+            if (stepNum >= 1) {
+                if (stepNum === 1) {
+                    stepNum = 1;
+                } else {
+                    stepNum -= 1;
+                }
+                $("#tr" + stepNum).remove();
+            }
+        }
     }
 
     var setting = {
